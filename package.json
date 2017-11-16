@@ -1,0 +1,19 @@
+{
+  "name": "nfl-rss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "md5": "^2.2.1",
+    "moment-timezone": "^0.5.14",
+    "request": "^2.83.0",
+    "rss": "^1.2.2"
+  }
+}
