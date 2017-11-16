@@ -57,9 +57,8 @@ const generateFeed = (includeStartOfGame) => new Promise((resolve, reject) => {
 					})
 				})
 
-			const xml = feed.xml({indent: true});
-			
-			resolve(xml);
+			const xml = feed.xml({indent: true})
+			resolve(xml)
 		})
 		.catch(reject)
 })
