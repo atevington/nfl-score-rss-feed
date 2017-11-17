@@ -7,7 +7,7 @@ const moment = require("moment-timezone")
 const express = require("express")
 const app = express()
 const port = process.env.PORT || 3000
-const basefeedUrl = process.env.BASE_FEED_URL || ""
+const baseFeedUrl = process.env.BASE_FEED_URL || ""
 const siteUrl = process.env.SITE_URL || ""
 
 const makeGetRequest = url => new Promise((resolve, reject) => {
@@ -20,53 +20,78 @@ const makeGetRequest = url => new Promise((resolve, reject) => {
 	})
 })
 
-const generateFeed = (includeStartOfGame) => new Promise((resolve, reject) => {
-	const scoreUrl = "https://www.nfl.com/liveupdate/scorestrip/ss.json"
-	const now = new Date()
-	const timeZone = "America/New_York"
+const getFeedTitle = gamesData => (
+	`NFL Live Score Updates ${gamesData.y}`
+)
 
-	makeGetRequest(scoreUrl)
-		.then(gameData => {
+const getFeedDescription = gamesData => (
+	`NFL Live Score Updates for the ${gamesData.y} Season`
+)
+
+const getFeedUrl = (baseFeedUrl, teams) => (
+	`${baseFeedUrl}?teams=${teams.join(",")}`
+)
+
+const getGameTitle = game => (
+	`${game.vnn} @ ${game.hnn}`
+)
+
+const getGameDescription = game => (
+	`${game.v}: ${game.vs}, ${game.h}: ${game.hs}`
+)
+
+const getGameUrl = (game, gamesData) => (
+	`https://www.nfl.com/gamecenter/${game.eid}/${gamesData.y}/${game.t}${gamesData.w}/${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`
+)
+
+const getGameHash = (game, gamesData) => (
+	md5(`${game.v}-${game.vs}-${game.h}-${game.hs}-${gamesData.w}-${gamesData.y}`)
+)
+
+const getGameDate = game => (
+	moment(new Date())
+		.tz("America/New_York")
+		.hour(parseInt(game.t.split(":")[0], 10) + 12)
+		.minute(parseInt(game.t.split(":")[1], 10))
+		.second(0)
+		.millisecond(0)
+)
+
+const generateFeed = teams => new Promise((resolve, reject) => {
+	makeGetRequest("https://www.nfl.com/liveupdate/scorestrip/ss.json")
+		.then(gamesData => {
 			const feed = new RSS({
-				title: "NFL Live Score Updates",
-				description: `NFL Live Score Updates for the ${gameData.y} Season`,
-				feed_url: `${basefeedUrl}?includeStartOfGame=${includeStartOfGame ? "1" : "0"}`,
+				title: getFeedTitle(gamesData),
+				description: getFeedDescription(gamesData),
+				feed_url: getFeedUrl(baseFeedUrl, teams),
 				site_url: siteUrl
 			})
 			
-			gameData.gms
-				.filter(game =>
-					["P", "F", "FO"].indexOf(game.q) === -1 &&
-					(includeStartOfGame || (game.vs !== 0 || game.hs !== 0))
-				)
+			gamesData.gms
+				.filter(game => game.q !== "P")
+				.filter(game => getGameDate(game).format("dddd").indexOf(game.d) === 0)
+				.filter(game => teams.length === 0 || teams.indexOf(game.v) !== -1 || teams.indexOf(game.h) !== -1)
 				.map(game => {
-					const gameHour = parseInt(game.t.split(":")[0], 10) + 12, gameMinute = parseInt(game.t.split(":")[1], 10)
-					
 					feed.item({
-						title: `${game.vnn} @ ${game.hnn}`,
-						description: `${game.v}: ${game.vs}, ${game.h}: ${game.hs}`,
-						url: `https://www.nfl.com/gamecenter/${game.eid}/${gameData.y}/${game.t}${gameData.w}/${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`,
-						guid: md5(`${game.v}-${game.vs}-${game.h}-${game.hs}-${gameData.w}-${gameData.y}`),
-						date: moment(now)
-							.tz(timeZone)
-							.hour(gameHour)
-							.minute(gameMinute)
-							.second(0)
-							.millisecond(0)
-							.toISOString()
+						title: getGameTitle(game),
+						description: getGameDescription(game),
+						url: getGameUrl(game, gamesData),
+						guid: getGameHash(game, gamesData),
+						date: getGameDate(game).toISOString()
 					})
 				})
 
-			const xml = feed.xml({indent: true})
-			resolve(xml)
+			resolve(feed.xml({indent: true}))
 		})
 		.catch(reject)
 })
 
 app.get("/", (req, res) => {
-	const includeStartOfGame = req.query.includeStartOfGame === "1"
-	
-	generateFeed(includeStartOfGame).then(
+	const teams = (req.query.teams || "").trim().length > 0 ?
+		(req.query.teams || "").trim().split(",").map(team => team.trim().toUpperCase()) :
+		[]
+
+	generateFeed(teams).then(
 		feed => res.header("Content-Type", "text/xml").send(feed),
 		() => res.status(500).send({error: "An error occurred when generating the feed."})
 	)
