@@ -41,11 +41,15 @@ const getGameDescription = game => (
 )
 
 const getGameUrl = (game, gamesData) => (
-	`https://www.nfl.com/gamecenter/${game.eid}/${gamesData.y}/${gamesData.t}${gamesData.w}/${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`
+	`https://www.nfl.com/gamecenter/${game.eid}/${gamesData.y}/${gamesData.t}${gamesData.w}/` +
+	`${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`
 )
 
-const getGameHash = (game, gamesData) => (
-	md5(`${game.v}-${game.vs}-${game.h}-${game.hs}-${gamesData.w}-${gamesData.y}`)
+const getGameHash = (game, gamesData, teams) => (
+	md5(
+		`${game.v}-${game.vs}-${game.h}-${game.hs}-${gamesData.w}-${gamesData.y}` +
+		(teams.length > 0 ? `-${teams.join(",")}`: "")
+	)
 )
 
 const getGameDate = game => (
@@ -76,7 +80,7 @@ const generateFeed = teams => new Promise((resolve, reject) => {
 						title: getGameTitle(game),
 						description: getGameDescription(game),
 						url: getGameUrl(game, gamesData),
-						guid: getGameHash(game, gamesData),
+						guid: getGameHash(game, gamesData, teams),
 						date: getGameDate(game).toISOString()
 					})
 				})
