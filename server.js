@@ -88,7 +88,7 @@ const generateFeed = teams => new Promise((resolve, reject) => {
 
 app.get("/", (req, res) => {
 	const teams = (req.query.teams || "").trim().length > 0 ?
-		(req.query.teams || "").trim().split(",").map(team => team.trim().toUpperCase()) :
+		(req.query.teams || "").trim().split(",").map(team => team.trim().toUpperCase()).filter(team => team.length > 0) :
 		[]
 
 	generateFeed(teams).then(
