@@ -41,7 +41,7 @@ const getGameDescription = game => (
 )
 
 const getGameUrl = (game, gamesData) => (
-	`https://www.nfl.com/gamecenter/${game.eid}/${gamesData.y}/${game.t}${gamesData.w}/${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`
+	`https://www.nfl.com/gamecenter/${game.eid}/${gamesData.y}/${gamesData.t}${gamesData.w}/${game.vnn}@${game.hnn}?icampaign=scoreStrip-globalNav-${game.eid}`
 )
 
 const getGameHash = (game, gamesData) => (
