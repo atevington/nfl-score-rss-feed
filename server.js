@@ -29,7 +29,7 @@ const getFeedDescription = gamesData => (
 )
 
 const getFeedUrl = (baseFeedUrl, teams) => (
-	`${baseFeedUrl}?teams=${teams.map(team => encodeURIComponent(team)).join(encodeURIComponent(","))}`
+	`${baseFeedUrl}?teams=${encodeURIComponent(teams.join(","))}`
 )
 
 const getGameTitle = game => (
