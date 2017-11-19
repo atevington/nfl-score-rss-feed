@@ -47,7 +47,7 @@ const getGameUrl = (game, gamesData) => (
 
 const getGameHash = (game, gamesData, teams) => (
 	md5(
-		`${game.v}-${game.vs}-${game.h}-${game.hs}-${gamesData.w}-${gamesData.y}` +
+		`${game.v}-${game.vs}-${game.h}-${game.hs}-${gamesData.t}-${gamesData.w}-${gamesData.y}` +
 		(teams.length > 0 ? `-${teams.join(",")}`: "")
 	)
 )
