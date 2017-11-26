@@ -101,8 +101,6 @@ app.get("/", (req, res) => {
 	)
 })
 
-app.use("*", (req, res) => {
-	res.status(404).send({error: "The requested resource was not found."})
-})
+app.use("*", (req, res) => res.status(404).send({error: "The requested resource was not found."}))
 
 app.listen(port, () => console.log(`Listening on port ${port}...`))
